@@ -1,0 +1,13 @@
+name = "Ferris"
+uuid = "63f0097a-12ad-48b6-b958-b7ba3e438463"
+authors = ["Oliver Wooding <oliverwooding@icloud.com>"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.6.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
