@@ -21,22 +21,22 @@ const None = __None()
 
 A value of `T` which may or may not exist.
 """
-const Option{T} = Union{Some{T}, __None}
+const Option{T} = Union{Some{T},__None}
 
-function unwrap(opt::Option{T})::T where T
-    if opt isa Some
-        opt.value
-    else
-        error(lazy"Called unwrap on None")
-    end
+function unwrap(opt::Option{T})::T where {T}
+  if opt isa Some
+    opt.value
+  else
+    error("Called unwrap on None")
+  end
 end
 
-function Base.map(f, opt::Option{T}) where T
-    if opt isa Some
-        return Some(f(opt.value))
-    else
-        return None
-    end
+function Base.map(f, opt::Option{T}) where {T}
+  if opt isa Some
+    return Some(f(opt.value))
+  else
+    return None
+  end
 end
 
 lift(f) = opt -> map(f, opt)

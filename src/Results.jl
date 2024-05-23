@@ -26,7 +26,7 @@ false
 ```
 """
 struct Ok{T}
-    __inner::T
+  __inner::T
 end
 
 """
@@ -45,7 +45,7 @@ true
 ```
 """
 struct Err{E}
-    __inner::E
+  __inner::E
 end
 
 """
@@ -101,7 +101,7 @@ julia> [0, 0.1f0, :foo, "bar", 3.6, 0x2, nothing] |>
  2.0
 ```
 """
-Result{T, E} = Union{Ok{T}, Err{E}}
+Result{T,E} = Union{Ok{T},Err{E}}
 
 """
     unwrap(::Result{T, E})
@@ -109,12 +109,12 @@ Result{T, E} = Union{Ok{T}, Err{E}}
 Returns the inner value of the argument if it is [`Ok`](@ref), or
 throws an error if it is an [`Err`](@ref).
 """
-function unwrap(res::Result{T, E})::T where {T, E}
-    if isok(res)
-        return res.__inner
-    else
-        error(lazy"Called unwrap on an Err: $res")
-    end
+function unwrap(res::Result{T,E})::T where {T,E}
+  if isok(res)
+    return res.__inner
+  else
+    error(lazy"Called unwrap on an Err: $res")
+  end
 end
 
 """
@@ -125,11 +125,12 @@ Returns `true` if the argument is an [`Ok`](@ref) value, or
 """
 isok(res::Result)::Bool = res isa Ok
 
-Base.map(f, res::Result{T, E}) where {
-    T, E
-} = if isok(res)
+Base.map(f, res::Result{T,E}) where {
+  T,E
+} =
+  if isok(res)
     Ok(f(res.__inner))
-else
+  else
     res
-end
+  end
 end
