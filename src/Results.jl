@@ -103,6 +103,9 @@ julia> [0, 0.1f0, :foo, "bar", 3.6, 0x2, nothing] |>
 """
 Result{T,E} = Union{Ok{T},Err{E}}
 
+# fix for older julia versions which don't have LazyString
+const error_msg_cons = @static VERSION >= v"1.8" ? LazyString : string
+
 """
     unwrap(::Result{T, E})
 
@@ -113,7 +116,7 @@ function unwrap(res::Result{T,E})::T where {T,E}
   if isok(res)
     return res.__inner
   else
-    error(lazy"Called unwrap on an Err: $res")
+    error(error_msg_cons("Called unwrap on an Err: ", res))
   end
 end
 
