@@ -6,6 +6,8 @@ include("Options.jl")
 import .Core: unwrap, lift
 using .Results, .Options
 
-export Ok, Err, Result, None, Some, Option, unwrap, lift
+import MLStyle: @match, @λ
+
+export Ok, Err, Result, None, Some, Option, unwrap, lift, @match, @λ
 
 end

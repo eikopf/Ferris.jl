@@ -4,6 +4,7 @@ variants.
 """
 module Results
 
+using MLStyle
 import ..Core: unwrap
 export Ok, Err, Result, isok, iserr, map_err, bimap
 
@@ -101,7 +102,10 @@ julia> [0, 0.1f0, :foo, "bar", 3.6, 0x2, nothing] |>
  2.0
 ```
 """
-Result{T,E} = Union{Ok{T},Err{E}}
+Result{T,E} = Union{
+  Ok{T},
+  Err{E}
+}
 
 # redefined methods to hide types in REPL, e.g. Ok(:foo) instead of Ok{Symbol}(:foo)
 Base.show(io::Core.IO, ok::Ok{T}) where {T} = print(io, "Ok(", repr(ok.__inner), ")")
@@ -158,5 +162,15 @@ Returns `true` if the argument is an [`Err`](@ref) value, or
 `false` if it is an [`Ok`](@ref) value.
 """
 iserr(res::Result)::Bool = res isa Err
+
+# PATTERN MATCHING BOILERPLATE
+
+function MLStyle.pattern_uncall(t::Type{<:Ok}, self::Function, type_params, type_args, args)
+  MLStyle.Record._compile_record_pattern(t, self, type_params, type_args, args)
+end
+
+function MLStyle.pattern_uncall(t::Type{<:Err}, self::Function, type_params, type_args, args)
+  MLStyle.Record._compile_record_pattern(t, self, type_params, type_args, args)
+end
 
 end

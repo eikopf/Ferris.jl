@@ -21,17 +21,20 @@ const None = __None()
 Base.show(io::Core.IO, ::typeof(None)) = print(io, "None")
 
 """
-    Option{T} = Union{Some{T}, None}
+    Option{T} = Union{Some{T}, typeof(None)}
 
-A value of `T` which may or may not exist.
+A value of `T` which may be [`None`](@ref)
 """
-const Option{T} = Union{Some{T},__None}
+const Option{T} = Union{
+  Some{T},
+  typeof(None)
+}
 
 unwrap(some::Some{T}) where {T} = some.value
-unwrap(_::__None) = error("Called unwrap on a None value")
+unwrap(::typeof(None)) = error("Called unwrap on a None value")
 
 Base.map(f, some::Some{T}) where {T} = Some(f(some.value))
-Base.map(_, _::__None) = None
+Base.map(_, ::typeof(None)) = None
 
 # pattern matching impl for None
 function MLStyle.pattern_uncall(::typeof(None), _, type_params, type_args, args)
