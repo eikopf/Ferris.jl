@@ -6,7 +6,7 @@ module Results
 
 using MLStyle
 import ..Core: unwrap
-export Ok, Err, Result, isok, iserr, map_err, bimap
+export Ok, Err, Result, isok, iserr, maperr, bimap
 
 """
 The successful variant of a [`Result`](@ref).
@@ -127,16 +127,16 @@ Base.map(f, ok::Ok{T}) where {T} = Ok(f(ok.__inner))
 Base.map(_, err::Err) = err
 
 """
-    map_err(f, ::Result{T, E})
+    maperr(f, ::Result{T, E})
   
 Applies the given function to the inner value of the [`Result`](@ref) if it is
 an [`Err`](@ref) value, or does nothing if it is an [`Ok`](@ref) value.
 
-You can think of [`map_err`](@ref) as the reverse of [`map`](@ref), and the 
+You can think of `maperr` as the reverse of [`map`](@ref), and the 
 second half of [`bimap`](@ref).
 """
-map_err(_, ok::Ok) = ok
-map_err(f, err::Err{E}) where {E} = Err(f(err.__inner))
+maperr(_, ok::Ok) = ok
+maperr(f, err::Err{E}) where {E} = Err(f(err.__inner))
 
 """
     bimap(f, g, ::Result{T, E})

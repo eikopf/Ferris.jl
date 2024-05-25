@@ -8,4 +8,4 @@ Ferris provides (among other things)
 
 - the `Option{T}` and `Result{T, E}` types;
 - the pattern matching `@match` and `@λ` macros, courtesy of [`MLStyle.jl`](https://github.com/thautwarm/MLStyle.jl);
-- some basic operations –– e.g. `map_err`, `unwrap`, `bimap`.
+- some basic operations –– e.g. `maperr`, `unwrap`, `bimap`.
