@@ -104,8 +104,8 @@ julia> [0, 0.1f0, :foo, "bar", 3.6, 0x2, nothing] |>
 Result{T,E} = Union{Ok{T},Err{E}}
 
 # redefined methods to hide types in REPL, e.g. Ok(:foo) instead of Ok{Symbol}(:foo)
-Base.show(io::Core.IO, ok::Ok{T}) where T = print(io, "Ok(", repr(ok.__inner), ")")
-Base.show(io::Core.IO, err::Err{E}) where E = print(io, "Err(", repr(err.__inner), ")")
+Base.show(io::Core.IO, ok::Ok{T}) where {T} = print(io, "Ok(", repr(ok.__inner), ")")
+Base.show(io::Core.IO, err::Err{E}) where {E} = print(io, "Err(", repr(err.__inner), ")")
 
 # default to the string constructor if LazyString isn't available
 const __error_msg_cons = @static VERSION >= v"1.8" ? LazyString : string
@@ -116,10 +116,10 @@ const __error_msg_cons = @static VERSION >= v"1.8" ? LazyString : string
 Returns the inner value of the argument if it is [`Ok`](@ref), or
 throws an error if it is an [`Err`](@ref).
 """
-unwrap(ok::Ok{T}) where T = ok.__inner
-unwrap(_::Err) = error(__error_msg_cons("Called unwrap on an Err value: ", res))
+unwrap(ok::Ok{T}) where {T} = ok.__inner
+unwrap(err::Err) = error(__error_msg_cons("Called unwrap on ", err))
 
-Base.map(f, ok::Ok{T}) where T = Ok(f(ok.__inner))
+Base.map(f, ok::Ok{T}) where {T} = Ok(f(ok.__inner))
 Base.map(_, err::Err) = err
 
 """
@@ -132,7 +132,7 @@ You can think of [`map_err`](@ref) as the reverse of [`map`](@ref), and the
 second half of [`bimap`](@ref).
 """
 map_err(_, ok::Ok) = ok
-map_err(f, err::Err{E}) where E = Err(f(err.__inner))
+map_err(f, err::Err{E}) where {E} = Err(f(err.__inner))
 
 """
     bimap(f, g, ::Result{T, E})
@@ -140,8 +140,8 @@ map_err(f, err::Err{E}) where E = Err(f(err.__inner))
 Applies the first argument (`f`) to the inner value of the [`Result`](@ref) if
 it is an [`Ok`](@ref) value, or the second argument (`g`) if it is an [`Err`](@ref) value.
 """
-bimap(f, _, ok::Ok{T}) where T = Ok(f(ok.__inner))
-bimap(_, f, err::Err{E}) where E = Err(f(err.__inner))
+bimap(f, _, ok::Ok{T}) where {T} = Ok(f(ok.__inner))
+bimap(_, f, err::Err{E}) where {E} = Err(f(err.__inner))
 
 """
     isok(::Result)::Bool

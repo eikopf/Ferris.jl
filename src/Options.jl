@@ -27,10 +27,10 @@ A value of `T` which may or may not exist.
 """
 const Option{T} = Union{Some{T},__None}
 
-unwrap(some::Some{T}) where T = some.value
+unwrap(some::Some{T}) where {T} = some.value
 unwrap(_::__None) = error("Called unwrap on a None value")
 
-Base.map(f, some::Some{T}) where T = Some(f(some.value))
+Base.map(f, some::Some{T}) where {T} = Some(f(some.value))
 Base.map(_, _::__None) = None
 
 # pattern matching impl for None

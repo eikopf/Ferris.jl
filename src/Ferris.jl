@@ -8,5 +8,4 @@ using .Results, .Options
 
 export Ok, Err, Result, None, Some, Option, unwrap, lift
 
-
 end
