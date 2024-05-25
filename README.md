@@ -6,6 +6,6 @@
 
 Ferris provides (among other things)
 
-- an `Option{T}` type;
-- a `Result{T, E}` type;
-- and functions to integrate them with preexisting Julia code.
+- the `Option{T}` and `Result{T, E}` types;
+- the pattern matching `@match` macro courtesy of [`MLStyle.jl`](https://github.com/thautwarm/MLStyle.jl);
+- and tools to integrate with preexisting Julia code.

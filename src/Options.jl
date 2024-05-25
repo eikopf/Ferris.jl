@@ -3,11 +3,13 @@ Provides the [`Option`](@ref) type and its [`None`](@ref) variant, and
 also reexports the [`Some`](@ref) type.
 """
 module Options
+# i'm about 54% certain that the `using` keyword here (instead of `import`)
+# is loadbearing –– probably for stupid macro reasons
+using MLStyle
 import ..Core: unwrap
 export None, Some, Option
 
 struct __None end
-Base.show(io::Core.IO, _::__None) = print(io, "None")
 
 """
     const None
@@ -16,29 +18,37 @@ The value which corresponds to an empty [`Option`](@ref).
 """
 const None = __None()
 
-"""
-    Option{T} = Union{Some{T}, None}
+Base.show(io::Core.IO, ::typeof(None)) = print(io, "None")
 
-A value of `T` which may or may not exist.
 """
-const Option{T} = Union{Some{T},__None}
+    Option{T} = Union{Some{T}, typeof(None)}
 
-function unwrap(opt::Option{T})::T where {T}
-  if opt isa Some
-    opt.value
+A value of `T` which may be [`None`](@ref)
+"""
+const Option{T} = Union{
+  Some{T},
+  typeof(None)
+}
+
+unwrap(some::Some{T}) where {T} = some.value
+unwrap(::typeof(None)) = error("Called unwrap on a None value")
+
+Base.map(f, some::Some{T}) where {T} = Some(f(some.value))
+Base.map(_, ::typeof(None)) = None
+
+# pattern matching impl for None
+function MLStyle.pattern_uncall(::typeof(None), _, type_params, type_args, args)
+  # check that no additional syntax was used
+  if isempty(type_params) && isempty(type_args) && isempty(args)
+    # return a pattern representing the literal value of None
+    return MLStyle.AbstractPatterns.literal(None)
   else
-    error("Called unwrap on None")
+    # otherwise throw an error
+    error("None expects no type parameters, type arguments, or actual arguments.")
   end
 end
 
-function Base.map(f, opt::Option{T}) where {T}
-  if opt isa Some
-    return Some(f(opt.value))
-  else
-    return None
-  end
-end
-
-lift(f) = opt -> map(f, opt)
+# declare None to be a unit variant
+MLStyle.is_enum(::typeof(None)) = true
 
 end
