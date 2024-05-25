@@ -1,7 +1,7 @@
 name = "Ferris"
 uuid = "63f0097a-12ad-48b6-b958-b7ba3e438463"
 authors = ["Oliver Wooding <oliverwooding@icloud.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
