@@ -5,7 +5,7 @@ variants.
 module Results
 
 import ..Core: unwrap
-export Ok, Err, Result, isok
+export Ok, Err, Result, isok, iserr, map_err, bimap
 
 """
 The successful variant of a [`Result`](@ref).
@@ -60,7 +60,7 @@ and only deal with possible errors afterwards. Exceptions don't
 really allow for this, since they expect to be handled immediately.
 
 The solution is therefore to treat errors as values, and wrap the
-[`Base.convert`] function as follows.
+[`Base.convert`](@ref) function as follows.
 
 ```julia
 function tryconvert(t::Type{T}, value::U)::Result{T, <:Exception} where {T, U}
@@ -103,8 +103,12 @@ julia> [0, 0.1f0, :foo, "bar", 3.6, 0x2, nothing] |>
 """
 Result{T,E} = Union{Ok{T},Err{E}}
 
-# fix for older julia versions which don't have LazyString
-const error_msg_cons = @static VERSION >= v"1.8" ? LazyString : string
+# redefined methods to hide types in REPL, e.g. Ok(:foo) instead of Ok{Symbol}(:foo)
+Base.show(io::Core.IO, ok::Ok{T}) where T = print(io, "Ok(", repr(ok.__inner), ")")
+Base.show(io::Core.IO, err::Err{E}) where E = print(io, "Err(", repr(err.__inner), ")")
+
+# default to the string constructor if LazyString isn't available
+const __error_msg_cons = @static VERSION >= v"1.8" ? LazyString : string
 
 """
     unwrap(::Result{T, E})
@@ -112,13 +116,32 @@ const error_msg_cons = @static VERSION >= v"1.8" ? LazyString : string
 Returns the inner value of the argument if it is [`Ok`](@ref), or
 throws an error if it is an [`Err`](@ref).
 """
-function unwrap(res::Result{T,E})::T where {T,E}
-  if isok(res)
-    return res.__inner
-  else
-    error(error_msg_cons("Called unwrap on an Err: ", res))
-  end
-end
+unwrap(ok::Ok{T}) where T = ok.__inner
+unwrap(_::Err) = error(__error_msg_cons("Called unwrap on an Err value: ", res))
+
+Base.map(f, ok::Ok{T}) where T = Ok(f(ok.__inner))
+Base.map(_, err::Err) = err
+
+"""
+    map_err(f, ::Result{T, E})
+  
+Applies the given function to the inner value of the [`Result`](@ref) if it is
+an [`Err`](@ref) value, or does nothing if it is an [`Ok`](@ref) value.
+
+You can think of [`map_err`](@ref) as the reverse of [`map`](@ref), and the 
+second half of [`bimap`](@ref).
+"""
+map_err(_, ok::Ok) = ok
+map_err(f, err::Err{E}) where E = Err(f(err.__inner))
+
+"""
+    bimap(f, g, ::Result{T, E})
+
+Applies the first argument (`f`) to the inner value of the [`Result`](@ref) if
+it is an [`Ok`](@ref) value, or the second argument (`g`) if it is an [`Err`](@ref) value.
+"""
+bimap(f, _, ok::Ok{T}) where T = Ok(f(ok.__inner))
+bimap(_, f, err::Err{E}) where E = Err(f(err.__inner))
 
 """
     isok(::Result)::Bool
@@ -128,12 +151,12 @@ Returns `true` if the argument is an [`Ok`](@ref) value, or
 """
 isok(res::Result)::Bool = res isa Ok
 
-Base.map(f, res::Result{T,E}) where {
-  T,E
-} =
-  if isok(res)
-    Ok(f(res.__inner))
-  else
-    res
-  end
+"""
+    iserr(::Result)::Bool
+
+Returns `true` if the argument is an [`Err`](@ref) value, or
+`false` if it is an [`Ok`](@ref) value.
+"""
+iserr(res::Result)::Bool = res isa Err
+
 end
