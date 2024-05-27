@@ -5,7 +5,7 @@ variants.
 module Results
 
 using MLStyle
-import ..Core: unwrap
+import ..Core: unwrap, flatten, and, or
 export Ok, Err, Result, isok, iserr, maperr, bimap
 
 """
@@ -122,6 +122,25 @@ throws an error if it is an [`Err`](@ref).
 """
 unwrap(ok::Ok{T}) where {T} = ok.__inner
 unwrap(err::Err) = error(__error_msg_cons("Called unwrap on ", err))
+
+"""
+    flatten(::Result{Result{T, E}, E})::Result{T, E}
+
+Extracts and returns the inner value of a passed [`Ok`](@ref), and simply
+returns any passed [`Err`](@ref) value.
+
+This operation is monadic `μ` for the monad obtained by fixing a value
+for `E`, i.e. the functor `T -> Result{T, E}`.
+"""
+flatten(ok::Ok{Ok{T}}) where {T} = ok.__inner
+flatten(err::Ok{Err{E}}) where {E} = err.__inner
+flatten(err::Err{E}) where {E} = err
+
+and(::Ok{T}, rhs::Result{T}) where {T} = rhs
+and(lhs::Err{E}, ::Result{T,E}) where {T,E} = lhs
+
+or(lhs::Ok{T}, ::Result{T}) where {T} = lhs
+or(::Err{E}, rhs::Result{T,E}) where {T,E} = rhs
 
 Base.map(f, ok::Ok{T}) where {T} = Ok(f(ok.__inner))
 Base.map(_, err::Err) = err
