@@ -1,7 +1,7 @@
 """
     Ferris.Core
 
-This module provides common function definitions, largely the faux-monadic
+This module provides common function symbols, largely the faux-monadic
 methods that both `Result` and `Option` provide.
 """
 module Core

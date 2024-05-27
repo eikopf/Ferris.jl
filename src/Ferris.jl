@@ -9,7 +9,7 @@ using .Results, .Options
 import MLStyle: @match, @λ
 
 export Ok, Err, Result,
-  None, Some, Option,
+  None, Some, Option, option,
   unwrap, flatten, lift,
   @match, @λ
 

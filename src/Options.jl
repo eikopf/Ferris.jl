@@ -7,7 +7,7 @@ module Options
 # is loadbearing –– probably for stupid macro reasons
 using MLStyle
 import ..Core: unwrap, flatten, and, or
-export None, Some, Option
+export None, Some, Option, option
 
 struct __None end
 
@@ -24,12 +24,69 @@ Base.show(io::Core.IO, ::typeof(None)) = print(io, "None")
 """
     Option{T} = Union{Some{T}, typeof(None)}
 
-A value of `T` which may be [`None`](@ref)
+A value of `T` which may be [`None`](@ref).
+
+# Example
+Consider a function that takes bytes (i.e. `UInt8` values) and tries
+to convert them into nybls.
+
+> A _nybl_ (also _nibble_ or _nybbl_) is a 4-bit unsigned integer.
+
+Using exceptions, this might be written as follows.
+```julia
+function nybl(byte::UInt8)
+  if byte < 0x10
+    return byte
+  else
+    error(lazy"Cannot convert \$byte into a nybl.")
+  end
+end
+```
+
+But exceptions are annoying, particularly when you already know some
+of your input values are probably going to be invalid nybls. So instead,
+we can rewrite the function as follows.
+
+```julia
+using Ferris.Options
+
+function nybl(byte::UInt8)::Option{UInt8}
+  if byte < 0x10
+    Some(byte)
+  else
+    None
+  end
+end
+
+# if you really want to be terse, this also works
+const nybl = filter(<(0x10)) ∘ Some
+```
 """
 const Option{T} = Union{
   Some{T},
   typeof(None)
 }
+
+"""
+    option(x)::Option{T}
+
+Converts the given value to an appropriate [`Option`](@ref), usually a [`Some`](@ref).
+
+Treat this function like [`string`](@ref), in the sense that it should be extended for
+appropriate types. In general, you only need to add a new method to `option` if your
+type is semantically equivalent to `None`; in all other cases you can just rely on the
+"default" method, which just applies the `Some` constructor.
+
+By default, the only types mapped to [`None`](@ref) are
+1. `typeof(None)`;
+2. [`Nothing`](@ref);
+3. [`Missing`](@ref).
+"""
+function option end
+option(::typeof(None)) = None
+option(::Nothing) = None
+option(::Missing) = None
+option(x) = Some(x)
 
 """
     unwrap(opt::Option{T})::T
@@ -57,6 +114,9 @@ or(::typeof(None), rhs::Option) = rhs
 
 Base.map(f, some::Some{T}) where {T} = Some(f(some.value))
 Base.map(_, ::typeof(None)) = None
+
+Base.filter(p, some::Some{T}) where {T} = p(some.value) ? some : None
+Base.filter(_, ::typeof(None)) = None
 
 # PATTERN MATCHING BOILERPLATE
 
